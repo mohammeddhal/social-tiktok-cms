@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MANAGER
+  PUBLISHER
+  PHOTOGRAPHER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum TaskStatus {
+  PENDING
+  UPLOADED
+  DELAYED
+}
+
+enum PublishStatus {
+  PENDING
+  PUBLISHED
+  DELAYED_UNPUBLISHED
+}
+
+enum StorageStatus {
+  ACTIVE
+  DELETED_FROM_STORAGE
+}
+
+enum Platform {
+  TIKTOK
+  SNAPCHAT
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         UserRole   @default(PHOTOGRAPHER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  assignedVideoTasks   VideoTask[]
+  publishedSocialTasks SocialPublishTask[]
+  uploadedVideos       Video[]
+  notifications        Notification[]
+
+  @@map("users")
+}
+
+model VideoTask {
+  id             String     @id @default(uuid())
+  photographerId String
+  date           DateTime   @db.Date
+  status         TaskStatus @default(PENDING)
+  isPromotionDay Boolean    @default(false)
+  
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  photographer   User       @relation(fields: [photographerId], references: [id])
+  videos         Video[]
+
+  @@unique([photographerId, date])
+  @@map("video_tasks")
+}
+
+model Video {
+  id               String        @id @default(uuid())
+  taskId           String
+  photographerId   String
+  fileUrl          String        @db.Text
+  fileKey          String        @db.Text
+  fileHash         String?
+  originalFilename String
+  fileSize         BigInt?
+  notes            String?       @db.Text
+  storageStatus    StorageStatus @default(ACTIVE)
+  
+  uploadedAt       DateTime      @default(now())
+  deletedAt        DateTime?
+  
+  task             VideoTask     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  photographer     User          @relation(fields: [photographerId], references: [id])
+  socialTasks      SocialPublishTask[]
+
+  @@index([fileHash])
+  @@map("videos")
+}
+
+model SocialPublishTask {
+  id             String        @id @default(uuid())
+  videoId        String
+  platform       Platform
+  status         PublishStatus @default(PENDING)
+  publisherId    String?
+  publishedAt    DateTime?
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  video          Video         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  publisher      User?         @relation(fields: [publisherId], references: [id])
+
+  @@unique([videoId, platform])
+  @@map("social_publish_tasks")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?  // null means it's a global or admin-level notification
+  title     String
+  message   String   @db.Text
+  link      String?  @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); prisma.$executeRawUnsafe('ALTER TABLE videos DROP INDEX videos_taskId_key;').then(console.log).catch(console.error).finally(() => prisma.$disconnect());
