@@ -44,3 +44,26 @@ export async function updateUserStatus(userId: string, status: 'ACTIVE' | 'INACT
 
   return { success: true }
 }
+
+export async function updateUser(userId: string, data: any) {
+  const session = await auth()
+  if (!session || session.user.role !== 'MANAGER') throw new Error('Unauthorized')
+
+  const updateData: any = {
+    name: data.name,
+    email: data.email,
+    role: data.role,
+  }
+
+  // Only update password if provided
+  if (data.password && data.password.trim() !== '') {
+    updateData.passwordHash = await bcrypt.hash(data.password, 10)
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: updateData
+  })
+
+  return { success: true }
+}

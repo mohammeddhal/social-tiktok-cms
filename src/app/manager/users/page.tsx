@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getUsers, createUser, updateUserStatus } from './actions'
-import { Users, Plus, Shield, ShieldOff } from 'lucide-react'
+import { getUsers, createUser, updateUserStatus, updateUser } from './actions'
+import { Users, Plus, Shield, ShieldOff, Edit } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
@@ -13,6 +13,8 @@ export default function UsersManagement() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'PHOTOGRAPHER' })
   const [submitting, setSubmitting] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
 
   const loadUsers = async () => {
     setLoading(true)
@@ -42,6 +44,34 @@ export default function UsersManagement() {
       toast.error(e.message || 'حدث خطأ')
     }
     setSubmitting(false)
+  }
+
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingUserId) return
+    setSubmitting(true)
+    try {
+      await updateUser(editingUserId, formData)
+      toast.success('تم تحديث بيانات المستخدم بنجاح')
+      setShowEditModal(false)
+      setEditingUserId(null)
+      setFormData({ name: '', email: '', password: '', role: 'PHOTOGRAPHER' })
+      loadUsers()
+    } catch (e: any) {
+      toast.error(e.message || 'حدث خطأ')
+    }
+    setSubmitting(false)
+  }
+
+  const openEditModal = (user: any) => {
+    setEditingUserId(user.id)
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: '', // Leave password empty for edit unless they want to change it
+      role: user.role
+    })
+    setShowEditModal(true)
   }
 
   const handleStatusChange = async (userId: string, newStatus: 'ACTIVE' | 'INACTIVE') => {
@@ -123,6 +153,10 @@ export default function UsersManagement() {
                         تفعيل
                       </button>
                     )}
+                    <button onClick={() => openEditModal(user)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 flex items-center mt-2" title="تعديل الحساب">
+                      <Edit className="w-4 h-4 mr-1" />
+                      تعديل
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -168,6 +202,51 @@ export default function UsersManagement() {
                   <button type="button" onClick={() => setShowAddModal(false)} className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">إلغاء</button>
                   <button type="submit" disabled={submitting} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:w-auto sm:text-sm disabled:opacity-50">
                     {submitting ? 'جاري الإضافة...' : 'إضافة'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div className="fixed inset-0 transition-opacity bg-gray-500 opacity-75 dark:bg-gray-900 dark:opacity-90" onClick={() => setShowEditModal(false)}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div className="relative z-10 inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-right overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+              <form onSubmit={handleEditUser}>
+                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">تعديل المستخدم</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">الاسم</label>
+                      <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">البريد الإلكتروني</label>
+                      <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">كلمة المرور (اتركها فارغة إذا لم ترد تغييرها)</label>
+                      <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">الدور</label>
+                      <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:text-white">
+                        <option value="PHOTOGRAPHER">مصور</option>
+                        <option value="PUBLISHER">مسؤول نشر السوشال ميديا</option>
+                        <option value="MANAGER">مدير</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex justify-end gap-3">
+                  <button type="button" onClick={() => setShowEditModal(false)} className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">إلغاء</button>
+                  <button type="submit" disabled={submitting} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:w-auto sm:text-sm disabled:opacity-50">
+                    {submitting ? 'جاري الحفظ...' : 'حفظ التعديلات'}
                   </button>
                 </div>
               </form>
