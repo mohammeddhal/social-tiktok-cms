@@ -15,7 +15,7 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
   const loadTasks = async () => {
     setLoading(true)
     try {
-      const data = await getPublisherTasks(platform, 'ARCHIVED')
+      const { tasks: data } = await getPublisherTasks(platform, 'ARCHIVED')
       setTasks(data)
     } catch (e) {
       toast.error('فشل في جلب البيانات')
