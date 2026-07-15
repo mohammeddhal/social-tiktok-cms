@@ -1,11 +1,41 @@
 'use client'
 
-import { useActionState } from 'react'
-import { authenticate } from './actions'
+import { useState } from 'react'
 import { LogIn } from 'lucide-react'
+import { signIn } from 'next-auth/react'
 
 export default function LoginPage() {
-  const [errorMessage, dispatch, isPending] = useActionState(authenticate, undefined)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [isPending, setIsPending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsPending(true)
+    setErrorMessage('')
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      })
+
+      if (result?.error) {
+        setErrorMessage('بيانات الدخول غير صحيحة.')
+        setIsPending(false)
+      } else {
+        // Success! Force a hard redirect to trigger middleware
+        window.location.href = '/'
+      }
+    } catch (err) {
+      setErrorMessage('حدث خطأ ما.')
+      setIsPending(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -21,7 +51,7 @@ export default function LoginPage() {
             نظام إدارة محتوى الفيديوهات GRT
           </p>
         </div>
-        <form className="mt-8 space-y-6" action={dispatch}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email-address" className="sr-only">
