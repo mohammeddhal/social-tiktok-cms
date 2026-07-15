@@ -96,7 +96,7 @@ export default function PublisherSnapchatDashboard() {
               <div className="p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div className="min-w-0 flex-1 ml-2">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate" title={task.video.originalFilename}>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white break-all" title={task.video.originalFilename}>
                       {task.video.originalFilename}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

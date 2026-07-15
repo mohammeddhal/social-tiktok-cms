@@ -73,8 +73,8 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {tasks.map((task) => (
                 <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center flex-wrap gap-2 break-all max-w-[200px] sm:max-w-xs">
                       {task.video.originalFilename}
                       {task.video.task.isPromotionDay && (
                         <span className="ml-2 bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 text-xs px-2 py-0.5 rounded-full">ترويج</span>
@@ -85,7 +85,7 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
                     {task.video.photographer.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format(new Date(task.createdAt), 'dd MMM yyyy', { locale: ar })}
+                    {format(new Date(task.createdAt), 'EEEE, dd MMM yyyy', { locale: ar })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {task.status === 'PUBLISHED' ? (
