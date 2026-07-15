@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getPublisherTasks, getPublisherViolationsCount, publishTask } from '../actions'
-import { CheckCircle, Ghost, Clock, AlertTriangle, Download, X } from 'lucide-react'
+import { CheckCircle, Ghost, Clock, AlertTriangle, Download, X, Video } from 'lucide-react'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import toast from 'react-hot-toast'
