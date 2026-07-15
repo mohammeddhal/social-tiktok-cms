@@ -130,7 +130,8 @@ export default function PublisherSnapchatDashboard() {
                     role === 'PUBLISHER' ? (
                       <>
                         <button onClick={() => {
-                          window.open(task.video.fileUrl, '_blank');
+                          const downloadUrl = `/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`
+                          window.open(downloadUrl, '_blank');
                           setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
                         }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
                           <Download className="w-4 h-4 ml-2" />

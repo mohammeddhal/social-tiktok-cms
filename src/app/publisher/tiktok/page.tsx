@@ -146,7 +146,8 @@ export default function PublisherTikTokDashboard() {
                 {role === 'PUBLISHER' ? (
                   <>
                     <button onClick={() => {
-                      window.open(task.video.fileUrl, '_blank');
+                      const downloadUrl = `/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`
+                      window.open(downloadUrl, '_blank');
                       setTimeout(() => window.open('https://tiktok.com/upload', '_blank'), 100);
                     }} className="w-full bg-black hover:bg-gray-800 text-white dark:bg-black dark:hover:bg-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
                       <Download className="w-4 h-4 ml-2" />
@@ -155,7 +156,8 @@ export default function PublisherTikTokDashboard() {
 
                     {task.video.task.isPromotionDay && (
                       <button onClick={() => {
-                        window.open(task.video.fileUrl, '_blank');
+                        const downloadUrl = `/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`
+                        window.open(downloadUrl, '_blank');
                         setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
                       }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-2">
                         <Download className="w-4 h-4 ml-2" />
