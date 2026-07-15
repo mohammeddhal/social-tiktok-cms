@@ -121,10 +121,10 @@ export async function getPublisherTasks(platform: 'TIKTOK' | 'SNAPCHAT', status:
   })
 
   // Filter out any logic if needed, but for PENDING we probably only want today's videos or earlier if they weren't archived
-  return tasks
+  return { tasks, role: session.user.role }
 }
 
-export async function publishTask(taskId: string) {
+export async function publishTask(taskId: string, publishedUrl?: string) {
   const session = await auth()
   if (!session || session.user.role !== 'PUBLISHER') throw new Error('Unauthorized')
 
@@ -154,13 +154,14 @@ export async function publishTask(taskId: string) {
       status: 'PUBLISHED',
       publisherId: session.user.id,
       publishedAt: new Date(),
+      publishedUrl: publishedUrl || null,
     }
   })
 
   return { success: true }
 }
 
-export async function publishSnapchatByVideo(videoId: string) {
+export async function publishSnapchatByVideo(videoId: string, publishedUrl?: string) {
   const session = await auth()
   if (!session || session.user.role !== 'PUBLISHER') throw new Error('Unauthorized')
 
@@ -189,7 +190,8 @@ export async function publishSnapchatByVideo(videoId: string) {
     data: {
       status: 'PUBLISHED',
       publisherId: session.user.id,
-      publishedAt: new Date()
+      publishedAt: new Date(),
+      publishedUrl: publishedUrl || null,
     }
   })
 

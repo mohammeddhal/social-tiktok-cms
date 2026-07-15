@@ -105,6 +105,7 @@ model SocialPublishTask {
   status         PublishStatus @default(PENDING)
   publisherId    String?
   publishedAt    DateTime?
+  publishedUrl   String?       @db.Text
   
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt

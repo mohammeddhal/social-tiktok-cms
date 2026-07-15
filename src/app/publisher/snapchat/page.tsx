@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 export default function PublisherSnapchatDashboard() {
   const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState('PUBLISHER')
   const [violations, setViolations] = useState(0)
   const [showViolationsModal, setShowViolationsModal] = useState(false)
   const [violationsList, setViolationsList] = useState<any[]>([])
@@ -27,13 +28,9 @@ export default function PublisherSnapchatDashboard() {
   const loadTasks = async () => {
     setLoading(true)
     try {
-      // We fetch all Snapchat tasks (PENDING and ARCHIVED) for visibility, or just PENDING
-      // Let's fetch all for today or recent, or maybe just PENDING and recently PUBLISHED.
-      // Since the requirement says "مشاهدة فيديوهات Snapchat وحالتها فقط", we will fetch both pending and archived.
-      // For simplicity, we can make an action to fetch recent snapchat tasks.
-      // But let's use the same `getPublisherTasks` and maybe fetch PENDING for now.
-      const data = await getPublisherTasks('SNAPCHAT', 'PENDING')
+      const { tasks: data, role: userRole } = await getPublisherTasks('SNAPCHAT', 'PENDING')
       setTasks(data)
+      setRole(userRole)
       const vCount = await getPublisherViolationsCount()
       setViolations(vCount)
     } catch (e) {
@@ -126,20 +123,27 @@ export default function PublisherSnapchatDashboard() {
 
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   {task.status === 'PENDING' ? (
-                    <div className="flex flex-col gap-2">
-                      <button onClick={() => {
-                        window.open(task.video.fileUrl, '_blank');
-                        setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
-                      }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
-                        <Download className="w-4 h-4 ml-2" />
-                        النشر عبر سناب شات
-                      </button>
-                      
-                      <button onClick={() => handlePublish(task.id)} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
-                        <CheckCircle className="w-4 h-4 ml-2" />
-                        تأكيد: تم النشر
-                      </button>
-                    </div>
+                    role === 'PUBLISHER' ? (
+                      <>
+                        <button onClick={() => {
+                          window.open(task.video.fileUrl, '_blank');
+                          setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
+                        }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
+                          <Download className="w-4 h-4 ml-2" />
+                          النشر عبر سناب شات
+                        </button>
+                        
+                        <button onClick={() => handlePublish(task.id)} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-4">
+                          <CheckCircle className="w-4 h-4 ml-2" />
+                          تأكيد النشر
+                        </button>
+                      </>
+                    ) : (
+                      <a href={task.video.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
+                        <Video className="w-4 h-4 ml-2" />
+                        معاينة الفيديو
+                      </a>
+                    )
                   ) : task.status === 'PUBLISHED' ? (
                     <div className="flex items-center text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
                       <CheckCircle className="w-5 h-5 mr-2" />

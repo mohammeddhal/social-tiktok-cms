@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 export default function PublisherTikTokDashboard() {
   const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState('PUBLISHER')
   const [violations, setViolations] = useState(0)
   const [hasSnapchat, setHasSnapchat] = useState(false)
   const [showViolationsModal, setShowViolationsModal] = useState(false)
@@ -28,8 +29,9 @@ export default function PublisherTikTokDashboard() {
   const loadTasks = async () => {
     setLoading(true)
     try {
-      const data = await getPublisherTasks('TIKTOK', 'PENDING')
+      const { tasks: data, role: userRole } = await getPublisherTasks('TIKTOK', 'PENDING')
       setTasks(data)
+      setRole(userRole)
       const vCount = await getPublisherViolationsCount()
       setViolations(vCount)
       const hasSnap = await checkPendingSnapchatForToday()
@@ -45,11 +47,16 @@ export default function PublisherTikTokDashboard() {
   }, [])
 
   const handlePublish = async (taskId: string) => {
-    if (!confirm('هل قمت بنشر هذا الفيديو على TikTok فعلاً؟')) return
+    const link = prompt('الرجاء إدخال رابط الفيديو بعد نشره في التيك توك لتأكيد النشر:')
+    if (link === null) return // User cancelled
+    if (link.trim() === '') {
+      toast.error('يجب إدخال الرابط لتأكيد النشر')
+      return
+    }
 
     try {
-      await publishTask(taskId)
-      toast.success('تم تأكيد النشر!')
+      await publishTask(taskId, link.trim())
+      toast.success('تم تأكيد النشر بنجاح وحفظ الرابط!')
       loadTasks()
     } catch (e: any) {
       toast.error(e.message || 'حدث خطأ')
@@ -132,43 +139,52 @@ export default function PublisherTikTokDashboard() {
                   </div>
                 )}
 
-                  <button onClick={() => {
-                    window.open(task.video.fileUrl, '_blank');
-                    setTimeout(() => window.open('https://tiktok.com/upload', '_blank'), 100);
-                  }} className="w-full bg-black hover:bg-gray-800 text-white dark:bg-black dark:hover:bg-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
-                    <Download className="w-4 h-4 ml-2" />
-                    النشر عبر تيك توك
-                  </button>
-
-                  {task.video.task.isPromotionDay && (
+                {role === 'PUBLISHER' ? (
+                  <>
                     <button onClick={() => {
                       window.open(task.video.fileUrl, '_blank');
-                      setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
-                    }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-2">
+                      setTimeout(() => window.open('https://tiktok.com/upload', '_blank'), 100);
+                    }} className="w-full bg-black hover:bg-gray-800 text-white dark:bg-black dark:hover:bg-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
                       <Download className="w-4 h-4 ml-2" />
-                      النشر عبر سناب شات
+                      النشر عبر تيك توك
                     </button>
-                  )}
 
-                  <button onClick={() => handlePublish(task.id)} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-4">
-                    <CheckCircle className="w-4 h-4 ml-2" />
-                    تأكيد النشر (تيك توك)
-                  </button>
+                    {task.video.task.isPromotionDay && (
+                      <button onClick={() => {
+                        window.open(task.video.fileUrl, '_blank');
+                        setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
+                      }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-2">
+                        <Download className="w-4 h-4 ml-2" />
+                        النشر عبر سناب شات
+                      </button>
+                    )}
 
-                  {task.video.task.isPromotionDay && (
-                    <button onClick={async () => {
-                      try {
-                        await publishSnapchatByVideo(task.video.id);
-                        toast.success('تم تأكيد نشر سناب شات');
-                        loadTasks();
-                      } catch (e: any) {
-                        toast.error(e.message || 'فشل تأكيد سناب شات');
-                      }
-                    }} className="w-full bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-2">
+                    <button onClick={() => handlePublish(task.id)} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-4">
                       <CheckCircle className="w-4 h-4 ml-2" />
-                      تأكيد النشر (سناب شات)
+                      تأكيد النشر (تيك توك)
                     </button>
-                  )}
+
+                    {task.video.task.isPromotionDay && (
+                      <button onClick={async () => {
+                        try {
+                          await publishSnapchatByVideo(task.video.id);
+                          toast.success('تم تأكيد نشر سناب شات');
+                          loadTasks();
+                        } catch (e: any) {
+                          toast.error(e.message || 'فشل تأكيد سناب شات');
+                        }
+                      }} className="w-full bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors mt-2">
+                        <CheckCircle className="w-4 h-4 ml-2" />
+                        تأكيد النشر (سناب شات)
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <a href={task.video.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
+                    <Video className="w-4 h-4 ml-2" />
+                    معاينة الفيديو
+                  </a>
+                )}
               </div>
             </div>
           ))}
