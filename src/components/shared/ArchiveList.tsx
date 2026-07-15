@@ -85,7 +85,7 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
                     {task.video.photographer.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {format(new Date(task.createdAt), 'EEEE, dd MMM yyyy', { locale: ar })}
+                    {format(new Date(task.createdAt), 'EEEE, dd MMM yyyy - hh:mm a', { locale: ar })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {task.status === 'PUBLISHED' ? (

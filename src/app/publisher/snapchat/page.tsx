@@ -111,7 +111,7 @@ export default function PublisherSnapchatDashboard() {
                 </div>
 
                 <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mb-4">
-                  <p>تم الرفع: {format(new Date(task.video.uploadedAt), 'dd MMM yyyy - hh:mm a', { locale: ar })}</p>
+                  <p>تم الرفع: {format(new Date(task.video.uploadedAt), 'EEEE, dd MMM yyyy - hh:mm a', { locale: ar })}</p>
                 </div>
 
                 {task.video.notes && (
