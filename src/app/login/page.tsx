@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { LogIn } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('')
@@ -80,6 +81,14 @@ export default function LoginPage() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1"
                 placeholder="كلمة المرور"
               />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                نسيت كلمة المرور؟
+              </Link>
             </div>
           </div>
 
