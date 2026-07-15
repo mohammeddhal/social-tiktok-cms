@@ -31,8 +31,10 @@ export default function PublisherSnapchatDashboard() {
       const { tasks: data, role: userRole } = await getPublisherTasks('SNAPCHAT', 'PENDING')
       setTasks(data)
       setRole(userRole)
-      const vCount = await getPublisherViolationsCount()
-      setViolations(vCount)
+      if (userRole === 'PUBLISHER') {
+        const vCount = await getPublisherViolationsCount()
+        setViolations(vCount)
+      }
     } catch (e) {
       toast.error('فشل في جلب البيانات')
     }
@@ -67,7 +69,9 @@ export default function PublisherSnapchatDashboard() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <img src="/images/snapchat-logo.png" alt="Snapchat" className="h-8 object-contain" />
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">يجب تأكيد النشر قبل الساعة 4:00 عصراً لتجنب المخالفات.</p>
+            {role === 'PUBLISHER' && (
+              <p className="text-gray-500 dark:text-gray-400 mt-1">يجب تأكيد النشر قبل الساعة 4:00 عصراً لتجنب المخالفات.</p>
+            )}
           </div>
           {violations > 0 && (
             <button 
