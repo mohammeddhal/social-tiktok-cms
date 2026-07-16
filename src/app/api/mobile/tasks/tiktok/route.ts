@@ -20,15 +20,7 @@ export async function GET(req: Request) {
     const tasks = await prisma.socialPublishTask.findMany({
       where: {
         platform: 'TIKTOK',
-        status: 'PENDING',
-        video: {
-          task: {
-            date: {
-              gte: startOfDay(today),
-              lte: endOfDay(today)
-            }
-          }
-        }
+        status: { in: ['PENDING', 'DELAYED_UNPUBLISHED'] }
       },
       include: {
         video: {
@@ -37,14 +29,14 @@ export async function GET(req: Request) {
               select: { name: true }
             },
             task: {
-              select: { isPromotionDay: true }
+              select: { isPromotionDay: true, date: true }
             }
           }
         }
       }
     })
 
-    const videosToPublish = tasks.map(task => ({
+    const mappedTasks = tasks.map(task => ({
       taskId: task.id,
       videoId: task.video.id,
       originalFilename: task.video.originalFilename,
@@ -52,10 +44,17 @@ export async function GET(req: Request) {
       uploadedAt: task.video.uploadedAt,
       notes: task.video.notes,
       photographerName: task.video.photographer.name,
-      isPromotionDay: task.video.task.isPromotionDay
+      isPromotionDay: task.video.task.isPromotionDay,
+      date: task.video.task.date.toISOString().split('T')[0],
+      isDelayed: task.status === 'DELAYED_UNPUBLISHED' || task.video.task.date < startOfDay(today)
     }))
 
-    return NextResponse.json({ tasks: videosToPublish })
+    const todayStr = today.toISOString().split('T')[0]
+    
+    const todayTasks = mappedTasks.filter(t => !t.isDelayed && t.date === todayStr)
+    const delayedTasks = mappedTasks.filter(t => t.isDelayed)
+
+    return NextResponse.json({ tasks: todayTasks, delayedTasks })
   } catch (error) {
     console.error('Mobile tasks error:', error)
     return NextResponse.json({ error: 'حدث خطأ في الخادم' }, { status: 500 })
