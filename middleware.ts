@@ -7,7 +7,7 @@ export default auth((req) => {
   const role = req.auth?.user?.role
 
   // Public paths
-  if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/login') {
+  if (pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname.startsWith('/api/mobile') || pathname === '/login') {
     if (isLoggedIn && pathname === '/login') {
       // Redirect to correct dashboard if trying to access login while logged in
       if (role === 'PHOTOGRAPHER') return NextResponse.redirect(new URL('/photographer', req.url))
