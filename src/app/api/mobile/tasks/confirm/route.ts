@@ -21,9 +21,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'معرف المهمة والرابط مطلوبان' }, { status: 400 })
     }
 
-    const task = await prisma.task.findUnique({
+    const task = await prisma.socialPublishTask.findUnique({
       where: { id: taskId },
-      include: { videos: true }
+      include: { video: true }
     })
 
     if (!task) {
@@ -31,12 +31,13 @@ export async function POST(req: Request) {
     }
 
     // Update the task
-    await prisma.task.update({
+    await prisma.socialPublishTask.update({
       where: { id: taskId },
       data: {
         status: 'PUBLISHED',
-        publishedLink: link,
-        publishedAt: new Date()
+        publishedUrl: link,
+        publishedAt: new Date(),
+        publisherId: user.userId
       }
     })
 

@@ -17,49 +17,43 @@ export async function GET(req: Request) {
 
     const today = new Date()
     
-    const tasks = await prisma.task.findMany({
+    const tasks = await prisma.socialPublishTask.findMany({
       where: {
-        date: {
-          gte: startOfDay(today),
-          lte: endOfDay(today)
-        },
         platform: 'TIKTOK',
         status: 'PENDING',
-        videos: {
-          some: {
-            status: 'READY'
+        video: {
+          task: {
+            date: {
+              gte: startOfDay(today),
+              lte: endOfDay(today)
+            }
           }
         }
       },
       include: {
-        videos: {
-          where: { status: 'READY' },
+        video: {
           include: {
             photographer: {
               select: { name: true }
+            },
+            task: {
+              select: { isPromotionDay: true }
             }
           }
         }
       }
     })
 
-    // Flatten the tasks to just a list of videos to publish
-    const videosToPublish = []
-    
-    for (const task of tasks) {
-      for (const video of task.videos) {
-        videosToPublish.push({
-          taskId: task.id,
-          videoId: video.id,
-          originalFilename: video.originalFilename,
-          fileUrl: video.fileUrl,
-          uploadedAt: video.uploadedAt,
-          notes: video.notes,
-          photographerName: video.photographer.name,
-          isPromotionDay: task.isPromotionDay
-        })
-      }
-    }
+    const videosToPublish = tasks.map(task => ({
+      taskId: task.id,
+      videoId: task.video.id,
+      originalFilename: task.video.originalFilename,
+      fileUrl: task.video.fileUrl,
+      uploadedAt: task.video.uploadedAt,
+      notes: task.video.notes,
+      photographerName: task.video.photographer.name,
+      isPromotionDay: task.video.task.isPromotionDay
+    }))
 
     return NextResponse.json({ tasks: videosToPublish })
   } catch (error) {
