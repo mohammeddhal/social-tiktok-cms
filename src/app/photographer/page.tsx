@@ -149,6 +149,9 @@ function DayCard({ day, reload, onUpload }: { day: any, reload: () => void, onUp
   } else if (day.status === 'UPLOADED' && isPublishedByManager) {
     cardStyle = 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 dark:border-emerald-700'
     statusBadge = <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 text-[10px] font-bold px-1.5 py-0.5 rounded">تم النشر</span>
+  } else if (day.status === 'UPLOADED' && day.isPastDeadline) {
+    cardStyle = 'bg-gray-100 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 opacity-60'
+    statusBadge = <span className="bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-[10px] font-bold px-1.5 py-0.5 rounded">لم يتم نشره</span>
   } else if (day.status === 'UPLOADED') {
     cardStyle = 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800'
     statusBadge = <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-[10px] font-bold px-1.5 py-0.5 rounded">قيد المراجعة</span>
