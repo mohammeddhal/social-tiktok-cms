@@ -6,6 +6,7 @@ import { r2Client } from '@/lib/r2'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import crypto from 'crypto'
+import { messaging } from '@/lib/firebaseAdmin'
 
 export async function generateUploadUrl(dateStr: string, fileName: string, contentType: string, fileHash?: string) {
   const session = await auth()
@@ -134,6 +135,32 @@ export async function saveVideoRecord(taskId: string, fileKey: string, originalF
     where: { id: taskId },
     data: { status: 'UPLOADED' }
   })
+
+  // Send Push Notification to Publishers
+  try {
+    const publishers = await prisma.user.findMany({
+      where: { role: 'PUBLISHER', fcmToken: { not: null } },
+      select: { fcmToken: true }
+    });
+
+    const tokens = publishers.map(p => p.fcmToken).filter(Boolean) as string[];
+    
+    if (tokens.length > 0) {
+      await messaging.sendEachForMulticast({
+        tokens,
+        notification: {
+          title: 'فيديو جديد جاهز للنشر!',
+          body: `قام المصور ${session.user.name} برفع فيديو جديد. يرجى مراجعته ونشره.`,
+        },
+        data: {
+          click_action: 'FLUTTER_NOTIFICATION_CLICK',
+          type: 'new_video'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+  }
 
   return { success: true }
 }

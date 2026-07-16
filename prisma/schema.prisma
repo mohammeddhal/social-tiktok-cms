@@ -54,6 +54,7 @@ model User {
   publishedSocialTasks SocialPublishTask[]
   uploadedVideos       Video[]
   notifications        Notification[]
+  fcmToken             String?
 
   @@map("users")
 }
