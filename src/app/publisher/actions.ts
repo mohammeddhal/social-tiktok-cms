@@ -22,14 +22,16 @@ export async function getPublisherTasks(platform: 'TIKTOK' | 'SNAPCHAT', status:
   const deadlineHour = setting ? parseInt(setting.value) : 16
 
   // Lazy evaluation: If it's deadline or later, mark pending tasks for today (or older) as DELAYED_UNPUBLISHED
-  const { startOfDay, setHours, isAfter, addDays } = await import('date-fns')
+  const { setHours, isAfter, addDays } = await import('date-fns')
+  const riyadhDateString = formatInTimeZone(new Date(), RIYADH_TZ, 'yyyy-MM-dd')
+  const endOfTodayRiyadh = new Date(`${riyadhDateString}T23:59:59.999Z`)
   
   const pendingTasks = await prisma.socialPublishTask.findMany({
     where: {
       status: 'PENDING',
       video: {
         task: {
-          date: { lte: startOfDay(nowRiyadh) }
+          date: { lte: endOfTodayRiyadh }
         }
       }
     },

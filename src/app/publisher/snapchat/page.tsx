@@ -70,7 +70,7 @@ export default function PublisherSnapchatDashboard() {
               <img src="/images/snapchat-logo.png" alt="Snapchat" className="h-8 object-contain" />
             </h1>
             {role === 'PUBLISHER' && (
-              <p className="text-gray-500 dark:text-gray-400 mt-1">يجب تأكيد النشر قبل الساعة 6:00 صباحاً لتجنب المخالفات.</p>
+              <></>
             )}
           </div>
           {violations > 0 && (
