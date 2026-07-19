@@ -145,7 +145,7 @@ export async function saveVideoRecord(taskId: string, fileKey: string, originalF
 
     const tokens = publishers.map(p => p.fcmToken).filter(Boolean) as string[];
     
-    if (tokens.length > 0) {
+    if (tokens.length > 0 && messaging) {
       await messaging.sendEachForMulticast({
         tokens,
         notification: {

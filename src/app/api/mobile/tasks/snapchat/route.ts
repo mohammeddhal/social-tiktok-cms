@@ -36,18 +36,25 @@ export async function GET(req: Request) {
       }
     })
 
-    const mappedTasks = tasks.map(task => ({
-      taskId: task.id,
-      videoId: task.video.id,
-      originalFilename: task.video.originalFilename,
-      fileUrl: task.video.fileUrl,
-      uploadedAt: task.video.uploadedAt,
-      notes: task.video.notes,
-      photographerName: task.video.photographer.name,
-      isPromotionDay: task.video.task.isPromotionDay,
-      date: task.video.task.date.toISOString().split('T')[0],
-      isDelayed: task.status === 'DELAYED_UNPUBLISHED' || task.video.task.date < startOfDay(today)
-    }))
+    const mappedTasks = tasks.map(task => {
+      const video = task.video;
+      const videoTask = video?.task;
+      const photographer = video?.photographer;
+      const taskDate = videoTask?.date || new Date();
+
+      return {
+        taskId: task.id,
+        videoId: video?.id || '',
+        originalFilename: video?.originalFilename || 'فيديو مجهول',
+        fileUrl: video?.fileUrl || '',
+        uploadedAt: video?.uploadedAt || new Date(),
+        notes: video?.notes || '',
+        photographerName: photographer?.name || 'مجهول',
+        isPromotionDay: videoTask?.isPromotionDay || false,
+        date: taskDate.toISOString().split('T')[0],
+        isDelayed: task.status === 'DELAYED_UNPUBLISHED' || taskDate < startOfDay(today)
+      };
+    });
 
     const todayStr = today.toISOString().split('T')[0]
     
