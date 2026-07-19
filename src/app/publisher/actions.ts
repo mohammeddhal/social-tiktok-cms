@@ -44,17 +44,20 @@ export async function getPublisherTasks(platform: 'TIKTOK' | 'SNAPCHAT', status:
 
   for (const pTask of pendingTasks) {
     const taskDate = pTask.video.task.date
-    const deadlineToday = setHours(taskDate, deadlineHour)
-    const deadlineTomorrow = setHours(addDays(taskDate, 1), deadlineHour)
+    
+    // If deadlineHour is <= 12, it means the next day (e.g., 6 AM of the next day)
+    const isNextDayDeadline = deadlineHour <= 12
+    const baseDateForDeadline = isNextDayDeadline ? addDays(taskDate, 1) : taskDate
+    const actualDeadline = setHours(baseDateForDeadline, deadlineHour)
 
     let isOverdue = false
 
-    if (nowRiyadh.getTime() >= deadlineToday.getTime()) {
-      isOverdue = true // Default is overdue if past 4 PM of the task date
+    if (nowRiyadh.getTime() >= actualDeadline.getTime()) {
+      isOverdue = true // Default is overdue if past the deadline
 
       if (pTask.platform === 'SNAPCHAT') {
-        // Condition 1: Was it uploaded late (after 4 PM on the task date)?
-        const uploadedLate = pTask.createdAt.getTime() > deadlineToday.getTime()
+        // Condition 1: Was it uploaded late?
+        const uploadedLate = pTask.createdAt.getTime() > actualDeadline.getTime()
 
         // Condition 2: Was it uploaded after TikTok was published for this day?
         let uploadedAfterTikTok = false
@@ -73,8 +76,9 @@ export async function getPublisherTasks(platform: 'TIKTOK' | 'SNAPCHAT', status:
         }
 
         if (uploadedLate || uploadedAfterTikTok) {
-          // It gets an extension until 4 PM the NEXT day
-          if (nowRiyadh.getTime() < deadlineTomorrow.getTime()) {
+          // It gets an extension until the same deadline hour on the NEXT day
+          const extensionDeadline = setHours(addDays(actualDeadline, 1), deadlineHour)
+          if (nowRiyadh.getTime() < extensionDeadline.getTime()) {
             isOverdue = false
           }
         }
@@ -124,7 +128,7 @@ export async function getPublisherTasks(platform: 'TIKTOK' | 'SNAPCHAT', status:
   return { tasks, role: session.user.role }
 }
 
-export async function publishTask(taskId: string, publishedUrl?: string) {
+export async function publishTask(taskId: string) {
   const session = await auth()
   if (!session || session.user.role !== 'PUBLISHER') throw new Error('Unauthorized')
 
@@ -137,16 +141,23 @@ export async function publishTask(taskId: string, publishedUrl?: string) {
   })
   const deadlineHour = setting ? parseInt(setting.value) : 16
 
-  if (currentHour >= deadlineHour) {
-    throw new Error('انتهت مهلة النشر، لا يمكنك تأكيد النشر الآن.')
-  }
-
   const task = await prisma.socialPublishTask.findUnique({
-    where: { id: taskId }
+    where: { id: taskId },
+    include: { video: { include: { task: true } } }
   })
 
   if (!task) throw new Error('Task not found')
   if (task.status !== 'PENDING') throw new Error('Task is not pending')
+
+  const { startOfDay, setHours, addDays } = await import('date-fns')
+  const taskDate = task.video.task.date
+  const isNextDayDeadline = deadlineHour <= 12
+  const baseDateForDeadline = isNextDayDeadline ? addDays(taskDate, 1) : taskDate
+  const actualDeadline = setHours(baseDateForDeadline, deadlineHour)
+
+  if (nowRiyadh.getTime() >= actualDeadline.getTime()) {
+    throw new Error('انتهت مهلة النشر، لا يمكنك تأكيد النشر الآن.')
+  }
 
   await prisma.socialPublishTask.update({
     where: { id: taskId },
@@ -154,14 +165,14 @@ export async function publishTask(taskId: string, publishedUrl?: string) {
       status: 'PUBLISHED',
       publisherId: session.user.id,
       publishedAt: new Date(),
-      publishedUrl: publishedUrl || null,
+      publishedUrl: null, // Removed URL requirement
     }
   })
 
   return { success: true }
 }
 
-export async function publishSnapchatByVideo(videoId: string, publishedUrl?: string) {
+export async function publishSnapchatByVideo(videoId: string) {
   const session = await auth()
   if (!session || session.user.role !== 'PUBLISHER') throw new Error('Unauthorized')
 
@@ -174,16 +185,23 @@ export async function publishSnapchatByVideo(videoId: string, publishedUrl?: str
   })
   const deadlineHour = setting ? parseInt(setting.value) : 16
 
-  if (currentHour >= deadlineHour) {
-    throw new Error('انتهت مهلة النشر، لا يمكنك تأكيد النشر الآن.')
-  }
-
   const snapTask = await prisma.socialPublishTask.findFirst({
-    where: { videoId, platform: 'SNAPCHAT' }
+    where: { videoId, platform: 'SNAPCHAT' },
+    include: { video: { include: { task: true } } }
   })
 
   if (!snapTask) throw new Error('Snapchat task not found for this video')
   if (snapTask.status !== 'PENDING') throw new Error('Task is not pending')
+
+  const { startOfDay, setHours, addDays } = await import('date-fns')
+  const taskDate = snapTask.video.task.date
+  const isNextDayDeadline = deadlineHour <= 12
+  const baseDateForDeadline = isNextDayDeadline ? addDays(taskDate, 1) : taskDate
+  const actualDeadline = setHours(baseDateForDeadline, deadlineHour)
+
+  if (nowRiyadh.getTime() >= actualDeadline.getTime()) {
+    throw new Error('انتهت مهلة النشر، لا يمكنك تأكيد النشر الآن.')
+  }
 
   await prisma.socialPublishTask.update({
     where: { id: snapTask.id },
@@ -191,7 +209,7 @@ export async function publishSnapchatByVideo(videoId: string, publishedUrl?: str
       status: 'PUBLISHED',
       publisherId: session.user.id,
       publishedAt: new Date(),
-      publishedUrl: publishedUrl || null,
+      publishedUrl: null, // Removed URL requirement
     }
   })
 

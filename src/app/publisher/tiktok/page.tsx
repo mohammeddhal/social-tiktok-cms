@@ -49,16 +49,9 @@ export default function PublisherTikTokDashboard() {
   }, [])
 
   const handlePublish = async (taskId: string) => {
-    const link = prompt('الرجاء إدخال رابط الفيديو بعد نشره في التيك توك لتأكيد النشر:')
-    if (link === null) return // User cancelled
-    if (link.trim() === '') {
-      toast.error('يجب إدخال الرابط لتأكيد النشر')
-      return
-    }
-
     try {
-      await publishTask(taskId, link.trim())
-      toast.success('تم تأكيد النشر بنجاح وحفظ الرابط!')
+      await publishTask(taskId)
+      toast.success('تم تأكيد النشر بنجاح!')
       loadTasks()
     } catch (e: any) {
       toast.error(e.message || 'حدث خطأ')
@@ -78,7 +71,7 @@ export default function PublisherTikTokDashboard() {
               <img src="/images/tiktok-logo.png" alt="TikTok" className="h-8 object-contain" />
             </h1>
             {role === 'PUBLISHER' && (
-              <p className="text-gray-500 dark:text-gray-400 mt-1">يجب تأكيد النشر قبل الساعة 4:00 عصراً لتجنب المخالفات.</p>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">يجب تأكيد النشر قبل الساعة 6:00 صباحاً لتجنب المخالفات.</p>
             )}
           </div>
           {violations > 0 && (
