@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     // Pass through the response body and set Content-Disposition
     const headers = new Headers(response.headers)
     headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`)
+    headers.set('Content-Type', 'application/octet-stream')
     
     return new NextResponse(response.body, {
       status: 200,
