@@ -100,6 +100,13 @@ export async function saveVideoRecord(taskId: string, fileKey: string, originalF
           storageStatus: 'ACTIVE'
         }
       })
+      
+      // Reset social publish task status so publisher sees the new video
+      await prisma.socialPublishTask.updateMany({
+        where: { videoId: existingVideo.id },
+        data: { status: 'PENDING' }
+      })
+      
       return { success: true }
     }
   }
