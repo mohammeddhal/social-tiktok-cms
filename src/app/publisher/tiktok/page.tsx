@@ -65,13 +65,17 @@ export default function PublisherTikTokDashboard() {
         const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
         const response = await fetch(downloadUrl);
         const blob = await response.blob();
-        const file = new File([blob], filename, { type: 'video/mp4' });
+        
+        // Ensure .mp4 extension for iOS recognition
+        const safeFilename = filename.toLowerCase().endsWith('.mp4') ? filename : `${filename}.mp4`;
+        const file = new File([blob], safeFilename, { type: 'video/mp4' });
+        
         toast.dismiss(toastId);
         
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          // Passing ONLY files (no title/text) helps iOS treat it as a pure video share
           await navigator.share({
-            files: [file],
-            title: filename,
+            files: [file]
           });
           return;
         }
