@@ -112,7 +112,7 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
                              controls 
                              preload="none"
                           />
-                          <a href={task.video.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full text-xs font-medium">
+                          <a href={`/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full text-xs font-medium">
                             تنزيل
                           </a>
                         </div>
@@ -182,7 +182,7 @@ export function ArchiveList({ platform, hideDownload = false, allowDelete = fals
                           controls 
                           preload="none" 
                         />
-                        <a href={task.video.fileUrl} target="_blank" rel="noopener noreferrer" className="text-center block text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <a href={`/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`} target="_blank" rel="noopener noreferrer" className="text-center block text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                           تنزيل الفيديو
                         </a>
                       </div>
