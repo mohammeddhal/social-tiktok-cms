@@ -57,6 +57,38 @@ export default function PublisherSnapchatDashboard() {
     }
   }
 
+  const handleNativeShare = async (url: string, filename: string, platformUrl: string) => {
+    try {
+      if (navigator.share) {
+        const toastId = toast.loading('جاري تجهيز الفيديو للتطبيق...');
+        const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        const file = new File([blob], filename, { type: 'video/mp4' });
+        toast.dismiss(toastId);
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: filename,
+          });
+          return;
+        }
+      }
+      
+      // Fallback
+      const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+      window.open(downloadUrl, '_blank');
+      setTimeout(() => window.open(platformUrl, '_blank'), 100);
+      
+    } catch (error: any) {
+      toast.dismiss();
+      const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+      window.open(downloadUrl, '_blank');
+      setTimeout(() => window.open(platformUrl, '_blank'), 100);
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div></div>
   }
@@ -129,11 +161,7 @@ export default function PublisherSnapchatDashboard() {
                   {task.status === 'PENDING' ? (
                     role === 'PUBLISHER' ? (
                       <>
-                        <button onClick={() => {
-                          const downloadUrl = `/api/download?url=${encodeURIComponent(task.video.fileUrl)}&filename=${encodeURIComponent(task.video.originalFilename)}`
-                          window.open(downloadUrl, '_blank');
-                          setTimeout(() => window.open('https://snapchat.com/spotlight', '_blank'), 100);
-                        }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
+                        <button onClick={() => handleNativeShare(task.video.fileUrl, task.video.originalFilename, 'https://snapchat.com/spotlight')} className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center transition-colors">
                           <Download className="w-4 h-4 ml-2" />
                           النشر عبر سناب شات
                         </button>
