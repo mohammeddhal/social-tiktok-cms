@@ -221,9 +221,14 @@ function DayCard({ day, reload, onUpload }: { day: any, reload: () => void, onUp
               )}
 
               {isPublished && (
-                <div className="flex-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-1.5 rounded-md text-[10px] font-medium flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
-                  <CheckCircle className="w-3 h-3 ml-1" /> منشور
-                </div>
+                <>
+                  <div className="flex-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-2 py-1.5 rounded-md text-[10px] font-medium flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
+                    <CheckCircle className="w-3 h-3 ml-1" /> منشور
+                  </div>
+                  <button onClick={onUpload} className="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/40 dark:hover:bg-purple-900/60 dark:text-purple-300 px-2 py-1.5 rounded-md text-[10px] font-medium flex items-center justify-center transition-colors">
+                    <Upload className="w-3 h-3 ml-1" /> تجربة
+                  </button>
+                </>
               )}
             </div>
           </div>
